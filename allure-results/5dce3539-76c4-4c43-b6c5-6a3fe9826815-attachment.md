@@ -1,0 +1,54 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: parabank.spec.ts >> ParaBank transfer UI scenarios from manual QA >> Mandatory Amount Validation
+- Location: tests\parabank.spec.ts:70:9
+
+# Error details
+
+```
+Error: page.goto: Target page, context or browser has been closed
+Call log:
+  - navigating to "https://parabank.parasoft.com/", waiting until "load"
+
+```
+
+# Test source
+
+```ts
+  1  | import { Page, Locator } from "@playwright/test";
+  2  | export class BasePage {
+  3  |     private page: Page;
+  4  |     constructor(page: Page) {
+  5  |         this.page = page;
+  6  |     }
+  7  | 
+  8  |     async click(locator: Locator) {
+  9  |         await locator.click();
+  10 |     }
+  11 | 
+  12 |     async fill(locator: Locator, value: string) {
+  13 |         await locator.fill(value);
+  14 |     }
+  15 | 
+  16 |     async getText(locator: string) {
+  17 |         return await this.page.textContent(locator);
+  18 |     }
+  19 | 
+  20 |     async waitForElement(locator: string) {
+  21 |         await this.page.waitForSelector(locator);
+  22 |     }
+  23 | 
+  24 |     async navigate() {
+> 25 |         await this.page.goto('https://parabank.parasoft.com');
+     |                         ^ Error: page.goto: Target page, context or browser has been closed
+  26 |     }
+  27 | }
+  28 | 
+  29 | 
+```

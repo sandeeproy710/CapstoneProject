@@ -1,0 +1,161 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: parabank.spec.ts >> ParaBank transfer UI scenarios from manual QA >> Zero Amount Validation
+- Location: tests\parabank.spec.ts:134:9
+
+# Error details
+
+```
+"beforeAll" hook timeout of 30000ms exceeded.
+```
+
+```
+TypeError: Cannot read properties of undefined (reading 'close')
+```
+
+# Test source
+
+```ts
+  1   | import { BasePage } from "../Base/BasePage";
+  2   | import { test, expect, Page } from "@playwright/test";
+  3   | import login from '../test-data/login.json';
+  4   | import LoginPage from "../Pages/LoginPage";
+  5   | import Dashboardpage from "../Pages/DashboardPage";
+  6   | import AccountOverview from "../Pages/AccountOverview";
+  7   | import CreateAccount from "../Pages/CreateAccountPage";
+  8   | import TransferFundsPage from "../Pages/FundTranferPage";
+  9   | import Assert from "../Utils/Assert";
+  10  | test.describe('ParaBank transfer UI scenarios from manual QA', () => {
+  11  |     let acc1: string;
+  12  |     let acc2: string;
+  13  |     let page: Page;
+  14  |     test.beforeAll(async ({ browser }) => {
+  15  |         page = await browser.newPage();
+  16  |         const basePage = new BasePage(page);
+  17  |         const loginpage = new LoginPage(page);
+  18  |         const dashboardpage = new Dashboardpage(page);
+  19  |         const accountoverview = new AccountOverview(page);
+  20  |         const createaccount = new CreateAccount(page);
+  21  |         await basePage.navigate();
+  22  |         await loginpage.login(
+  23  |             login.username,
+  24  |             login.password
+  25  |         );
+  26  |         await dashboardpage.accountOverview();
+  27  |         acc1 = await accountoverview.extractAccount();
+  28  |         await dashboardpage.registerAccount();
+  29  |         await createaccount.newAccount(login.accType, acc1);
+  30  |         acc2 = await createaccount.extractAccount();
+  31  |         console.log(acc1, acc2);
+  32  |     }, 60000);
+  33  | 
+  34  |     test.afterAll(async () => {
+> 35  |         await page.close();
+      |                    ^ TypeError: Cannot read properties of undefined (reading 'close')
+  36  |     });
+  37  | 
+  38  |     test('Transfer Funds with Valid Accounts', async () => {
+  39  |         const dashboardpage = new Dashboardpage(page);
+  40  |         const transferPage = new TransferFundsPage(page);
+  41  |         await dashboardpage.fundTransfer();
+  42  |         await transferPage.transferFunds(
+  43  |             login.validTransfer.amount,
+  44  |             acc1,
+  45  |             acc2
+  46  |         );
+  47  |         await transferPage.validateTransfer(
+  48  |             login.validTransfer.amount,
+  49  |             acc1,
+  50  |             acc2
+  51  |         );
+  52  |     }
+  53  |     );
+  54  | 
+  55  |     test('Transfer with Insufficient Balance', async () => {
+  56  |         const dashboardpage = new Dashboardpage(page);
+  57  |         const transferPage = new TransferFundsPage(page);
+  58  |         await dashboardpage.fundTransfer();
+  59  |         const assert: Assert = new Assert(page);
+  60  |         await transferPage.transferFunds(
+  61  |             login.insufficientBalance.amount,
+  62  |             acc1,
+  63  |             acc2
+  64  |         );
+  65  |         const loca = page.locator('#showResult h1').first();
+  66  |         await assert.neagtiveAssert(loca);
+  67  |     }
+  68  |     );
+  69  | 
+  70  |     test('Mandatory Amount Validation', async () => {
+  71  |         const dashboardpage = new Dashboardpage(page);
+  72  |         const transferPage = new TransferFundsPage(page);
+  73  |         await dashboardpage.fundTransfer();
+  74  |         const assert: Assert = new Assert(page);
+  75  |         await transferPage.transferFundsValidation(
+  76  |             acc1,
+  77  |             acc2
+  78  |         );
+  79  |         const loca = page.locator('#showError').first();
+  80  |         await assert.errorAssert(loca);
+  81  | 
+  82  |     }
+  83  |     );
+  84  | 
+  85  |     test('Same Account Transfer Validation', async () => {
+  86  |         const dashboardpage = new Dashboardpage(page);
+  87  |         const transferPage = new TransferFundsPage(page);
+  88  |         await dashboardpage.fundTransfer();
+  89  |         const assert: Assert = new Assert(page);
+  90  |         await transferPage.transferFunds(
+  91  |             login.sameAccountTransfer.amount,
+  92  |             acc1,
+  93  |             acc1
+  94  |         );
+  95  |         const loca = page.locator('#showResult h1').first();
+  96  |         await assert.neagtiveAssert(loca);
+  97  | 
+  98  |     }
+  99  |     );
+  100 | 
+  101 |     test('Negative Amount Validation', async () => {
+  102 |         const dashboardpage = new Dashboardpage(page);
+  103 |         const transferPage = new TransferFundsPage(page);
+  104 |         await dashboardpage.fundTransfer();
+  105 |         const assert: Assert = new Assert(page);
+  106 |         await transferPage.transferFunds(
+  107 |             login.negativeTransfer.amount,
+  108 |             acc1,
+  109 |             acc2
+  110 |         );
+  111 | 
+  112 |         const loca = page.locator('#showResult h1').first();
+  113 |         await assert.neagtiveAssert(loca);
+  114 | 
+  115 |     }
+  116 |     );
+  117 | 
+  118 |     test('Success Message Validation', async () => {
+  119 |         const dashboardpage = new Dashboardpage(page);
+  120 |         const transferPage = new TransferFundsPage(page);
+  121 |         await dashboardpage.fundTransfer();
+  122 |         const assert: Assert = new Assert(page);
+  123 |         await transferPage.transferFunds(
+  124 |             login.validTransfer.amount,
+  125 |             acc1,
+  126 |             acc2
+  127 |         );
+  128 |         const loca = page.getByText('Transfer Complete!');
+  129 |         await assert.successAssert(loca);
+  130 | 
+  131 |     }
+  132 |     );
+  133 | 
+  134 |     test('Zero Amount Validation', async () => {
+  135 |         const dashboardpage = new Dashboardpage(page);
+```

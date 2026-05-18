@@ -1,0 +1,28 @@
+{
+    "username": "san71020020",
+    "password": "mnbvcxz",
+    "name": "san",
+    "accType": "SAVINGS",
+    "validTransfer": {
+        "amount": "100"
+    },
+    "insufficientBalance": {
+        "amount": "999999"
+    },
+    "mandatoryAmount": {
+        "amount": ""
+    },
+    "sameAccountTransfer": {
+        "amount": "100"
+    },
+    "negativeTransfer": {
+        "amount": "-500"
+    },
+    "zeroTransfer": {
+        "amount": "0"
+    },
+    "largeTransfer": {
+        "amount": "9999999999999999999999999999999999"
+    }
+
+}
